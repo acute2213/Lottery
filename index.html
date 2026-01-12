@@ -1,0 +1,69 @@
+﻿<!doctype html>
+<html lang="ko" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>강심장의 인생로또</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <p class="kicker">로또 6/45</p>
+          <h1 class="hero-title" aria-label="강심장의 인생로또">
+            <span class="hero-title__group">
+              <span class="hero-title__ball" data-number="1">강</span>
+              <span class="hero-title__ball" data-number="2">심</span>
+              <span class="hero-title__ball" data-number="3">장</span>
+            </span>
+            <span class="hero-title__ball hero-title__ball--small" data-number="4">의</span>
+            <span class="hero-title__group">
+              <span class="hero-title__ball" data-number="5">인</span>
+              <span class="hero-title__ball" data-number="6">생</span>
+              <span class="hero-title__ball" data-number="7">로</span>
+              <span class="hero-title__ball" data-number="8">또</span>
+            </span>
+          </h1>
+          <p class="subtitle">과거 당첨 빈도 기반 6세트 번호를 생성하고 공유하세요.</p>
+          <section class="actions hero-actions">
+            <button class="action-button action-button--pill action-button--fill" id="generate" type="button">
+              <span class="action-button__label">생성</span>
+            </button>
+            <button class="action-button action-button--pill action-button--outline" id="share" type="button">
+              <span class="action-button__label">공유</span>
+            </button>
+          </section>
+        </div>
+        <button class="mode-toggle" type="button" aria-pressed="true">
+          <span class="mode-toggle__icon" aria-hidden="true">D</span>
+          <span class="mode-toggle__label">다크</span>
+        </button>
+      </header>
+
+      <main class="card">
+        <section class="numbers">
+          <p class="data-note">
+            기준: 공개 회차 기록 기반 빈도 적용
+            (<a href="https://lotto.asamaru.net/%EB%A1%9C%EB%98%90645/%EB%8B%B9%EC%B2%A8%EA%B2%B0%EA%B3%BC/" target="_blank" rel="noreferrer">data source</a>)
+          </p>
+          <div class="numbers__grid" id="numbers"></div>
+        </section>
+
+        <p class="hint" id="status" aria-live="polite"></p>
+
+        <section class="chart">
+          <div class="chart__header">
+            <h2>숫자별 출현 확률</h2>
+            <p>전체 1212회차 기준(각 숫자 출현 횟수 / 1212)</p>
+          </div>
+          <div class="chart__canvas-wrap">
+            <canvas id="frequencyChart" aria-label="로또 숫자별 출현 확률 그래프"></canvas>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
