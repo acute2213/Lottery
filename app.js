@@ -168,7 +168,7 @@ const getShareText = () => {
     return "로또 6/45 번호가 아직 없습니다.";
   }
   const lines = currentSets.map((setValues) => setValues.join(", "));
-  return `로또 6/45 빈출 기반 번호\n${lines.join("\n")}`;
+  return `과거 빈도를 기반한 강심장이 추천하는 인생로또\n\n${lines.join("\n")}`;
 };
 
 const copyToClipboard = async (text) => {
