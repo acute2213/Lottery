@@ -115,6 +115,23 @@ body::after {
   margin-bottom: 36px;
 }
 
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.site-nav a {
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .kicker {
   text-transform: uppercase;
   letter-spacing: 0.3em;
@@ -198,6 +215,70 @@ h1 {
   border: 1px solid var(--outline);
   backdrop-filter: blur(6px) saturate(130%);
   -webkit-backdrop-filter: blur(6px) saturate(130%);
+}
+
+.info {
+  margin-top: 28px;
+  background: rgba(22, 24, 32, 0.72);
+  border-radius: 24px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.info h2 {
+  margin: 0 0 14px;
+  font-size: 20px;
+}
+
+.info p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.info-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.info--compact {
+  background: rgba(30, 24, 20, 0.6);
+}
+
+.site-footer {
+  margin-top: 32px;
+  padding: 18px 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-note {
+  margin: 0;
 }
 
 .data-note {

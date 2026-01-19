@@ -47,6 +47,13 @@
         </button>
       </header>
 
+      <nav class="site-nav" aria-label="사이트 안내">
+        <a href="about.html">소개</a>
+        <a href="privacy.html">개인정보처리방침</a>
+        <a href="terms.html">이용약관</a>
+        <a href="contact.html">문의</a>
+      </nav>
+
       <main class="card">
         <section class="numbers">
           <p class="data-note">
@@ -68,6 +75,33 @@
           </div>
         </section>
       </main>
+
+      <section class="info">
+        <h2>서비스 안내</h2>
+        <div class="info-grid">
+          <article class="info-card">
+            <h3>이 서비스는 무엇인가요?</h3>
+            <p>로또 번호를 무작위가 아니라 과거 빈도 데이터를 기반으로 5세트 추천해 주고, QR을 통해 당첨 여부를 확인할 수 있는 도우미입니다.</p>
+          </article>
+          <article class="info-card">
+            <h3>어떻게 사용하나요?</h3>
+            <p>생성 버튼으로 번호를 만들고, 바코드 확인 버튼으로 QR을 스캔하거나 링크를 붙여넣으면 당첨 결과를 보여줍니다.</p>
+          </article>
+          <article class="info-card">
+            <h3>데이터 출처</h3>
+            <p>번호 추천은 공개 회차 데이터 기반이며, 당첨 조회는 동행복권 공개 API를 사용합니다.</p>
+          </article>
+          <article class="info-card">
+            <h3>정확도와 책임</h3>
+            <p>본 서비스는 참고용 정보 제공 목적이며, 당첨 보장이나 투자 권유가 아닙니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="info info--compact">
+        <h2>책임있는 이용</h2>
+        <p>로또는 과도한 구매를 지양하고, 건전한 범위 내에서 즐겨주세요. 서비스 제공자는 금전적 손실에 대해 책임을 지지 않습니다.</p>
+      </section>
 
       <div class="scanner" id="scanner" hidden>
         <div class="scanner__card" role="dialog" aria-modal="true" aria-labelledby="scannerTitle">
@@ -94,6 +128,16 @@
           </div>
         </div>
       </div>
+
+      <footer class="site-footer">
+        <div class="footer-links">
+          <a href="about.html">소개</a>
+          <a href="privacy.html">개인정보처리방침</a>
+          <a href="terms.html">이용약관</a>
+          <a href="contact.html">문의</a>
+        </div>
+        <p class="footer-note">본 사이트는 동행복권과 제휴하거나 공식 서비스를 제공하지 않습니다.</p>
+      </footer>
     </div>
 
     <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
