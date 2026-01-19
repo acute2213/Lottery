@@ -182,6 +182,9 @@ const parseQrPayload = (payload) => {
     const match = value.match(/[?&]v=([^&]+)/);
     if (match) encoded = match[1];
   }
+  if (!encoded && /^\d+q/.test(value)) {
+    encoded = value;
+  }
   if (!encoded) return null;
   const firstIndex = encoded.indexOf("q");
   if (firstIndex <= 0) return null;
@@ -200,6 +203,17 @@ const parseQrPayload = (payload) => {
     group = regex.exec(encoded);
   }
   return { draw, sets };
+};
+
+const showScanError = (message, payload = "") => {
+  scannerResult.innerHTML = "";
+  scannerHint.textContent = message;
+  if (payload) {
+    const raw = document.createElement("div");
+    raw.className = "scan-summary";
+    raw.textContent = `인식값: ${payload}`;
+    scannerResult.appendChild(raw);
+  }
 };
 
 const renderScanResult = ({ draw, date, numbers, bonus }, sets) => {
@@ -236,13 +250,17 @@ const renderScanResult = ({ draw, date, numbers, bonus }, sets) => {
 const checkWinning = async (payload) => {
   const parsed = parseQrPayload(payload);
   if (!parsed) {
-    scannerHint.textContent = "QR 형식을 인식하지 못했습니다.";
+    const trimmed = (payload || "").trim();
+    const message = trimmed
+      ? "바코드 값으로는 조회할 수 없습니다. 상단 QR을 비춰주세요."
+      : "QR 형식을 인식하지 못했습니다. 상단 QR을 비춰주세요.";
+    showScanError(message, trimmed);
     return;
   }
 
   const { draw, sets } = parsed;
   if (sets.length === 0) {
-    scannerHint.textContent = "QR에 로또 번호가 없습니다.";
+    showScanError("QR에 로또 번호가 없습니다.", payload);
     return;
   }
 
@@ -305,7 +323,21 @@ const startZxing = async () => {
     return;
   }
   try {
-    zxingReader = new window.ZXing.BrowserMultiFormatReader();
+    const ZXing = window.ZXing;
+    const hints = new Map();
+    if (ZXing.DecodeHintType && ZXing.BarcodeFormat) {
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+        ZXing.BarcodeFormat.ITF,
+      ]);
+    }
+    zxingReader = new ZXing.BrowserMultiFormatReader(hints);
     zxingActive = true;
     scannerStream = await navigator.mediaDevices.getUserMedia({
       video: {
@@ -369,7 +401,18 @@ const startScanner = async () => {
 
   if ("BarcodeDetector" in window) {
     try {
-      barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
+      barcodeDetector = new BarcodeDetector({
+        formats: [
+          "qr_code",
+          "code_128",
+          "code_39",
+          "ean_13",
+          "ean_8",
+          "upc_a",
+          "upc_e",
+          "itf",
+        ],
+      });
       scannerStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
