@@ -426,6 +426,34 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
+.scanner__actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.scanner__upload {
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+#scannerFile {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 .scanner__result {
   margin-top: 16px;
   display: grid;

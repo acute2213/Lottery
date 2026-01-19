@@ -12,6 +12,7 @@ const scannerHint = document.getElementById("scannerHint");
 const scannerResult = document.getElementById("scannerResult");
 const closeScannerButton = document.getElementById("closeScanner");
 const scannerConfirm = document.getElementById("scannerConfirm");
+const scannerFile = document.getElementById("scannerFile");
 
 const SET_COUNT = 5;
 const COUNT = 6;
@@ -331,11 +332,40 @@ const startZxing = async () => {
   }
 };
 
+const decodeFromImageFile = async (file) => {
+  if (!file || !window.ZXing) {
+    scannerHint.textContent = "이미지 인식을 지원하지 않습니다.";
+    return;
+  }
+  try {
+    scannerHint.textContent = "이미지를 분석 중입니다...";
+    const reader = new window.ZXing.BrowserMultiFormatReader();
+    const imageUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.src = imageUrl;
+    await image.decode();
+    const result = await reader.decodeFromImageElement(image);
+    URL.revokeObjectURL(imageUrl);
+    if (result && result.getText) {
+      await checkWinning(result.getText());
+    } else {
+      scannerHint.textContent = "QR을 찾지 못했습니다.";
+    }
+  } catch (error) {
+    scannerHint.textContent = "QR을 찾지 못했습니다.";
+  }
+};
+
 const startScanner = async () => {
   if (!scanner || !scannerVideo) return;
   scannerResult.innerHTML = "";
   scannerHint.textContent = "카메라 사용 확인을 눌러주세요.";
   scanner.hidden = false;
+
+  const ua = navigator.userAgent || "";
+  if (/KAKAOTALK|FBAN|FBAV|Instagram/.test(ua)) {
+    scannerHint.textContent = "인앱 브라우저는 스캔이 불안정합니다. Safari/Chrome에서 열어주세요.";
+  }
 
   if ("BarcodeDetector" in window) {
     try {
@@ -515,6 +545,14 @@ if (scanButton) {
 }
 if (scannerConfirm) {
   scannerConfirm.addEventListener("click", startScanner);
+}
+if (scannerFile) {
+  scannerFile.addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (file) {
+      decodeFromImageFile(file);
+    }
+  });
 }
 if (closeScannerButton) {
   closeScannerButton.addEventListener("click", closeScanner);
