@@ -4,8 +4,9 @@ const shareButton = document.getElementById("share");
 const statusText = document.getElementById("status");
 const modeToggle = document.querySelector(".mode-toggle");
 const chartCanvas = document.getElementById("frequencyChart");
+const confettiLayer = document.querySelector(".confetti-layer");
 
-const SET_COUNT = 6;
+const SET_COUNT = 5;
 const COUNT = 6;
 const MAX_NUMBER = 45;
 const TOTAL_DRAWS = 1212;
@@ -156,6 +157,52 @@ const renderChart = () => {
   });
 };
 
+const createConfetti = () => {
+  if (!confettiLayer) return;
+  confettiLayer.innerHTML = "";
+  const colors = [
+    "#ff6b6b",
+    "#ffd93d",
+    "#6bcbef",
+    "#a66bff",
+    "#6bff95",
+    "#ff9f68",
+    "#5fe1ff",
+    "#ff7bdc",
+    "#ffc857",
+  ];
+  const baseCount = Math.floor(window.innerWidth / 6);
+  const count = Math.min(220, Math.max(120, baseCount));
+
+  for (let i = 0; i < count; i += 1) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    const width = 4 + Math.random() * 10;
+    const height = 4 + Math.random() * 16;
+    const drift = (Math.random() - 0.5) * 120;
+    const rotation = Math.random() * 360;
+    const duration = 8 + Math.random() * 10;
+    const delay = -Math.random() * duration;
+    const opacity = 0.55 + Math.random() * 0.35;
+    const left = Math.random() * 100;
+    const top = -30 + Math.random() * 20;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    piece.style.left = `${left}%`;
+    piece.style.top = `${top}vh`;
+    piece.style.setProperty("--w", `${width}px`);
+    piece.style.setProperty("--h", `${height}px`);
+    piece.style.setProperty("--drift", `${drift}px`);
+    piece.style.setProperty("--r", `${rotation}deg`);
+    piece.style.setProperty("--d", `${duration}s`);
+    piece.style.setProperty("--delay", `${delay}s`);
+    piece.style.setProperty("--o", opacity.toFixed(2));
+    piece.style.setProperty("--c", color);
+
+    confettiLayer.appendChild(piece);
+  }
+};
+
 const generateNumbers = () => {
   currentSets = Array.from({ length: SET_COUNT }, () => createWeightedSet());
   renderSets(currentSets);
@@ -240,6 +287,7 @@ const toggleTheme = () => {
 const init = () => {
   const saved = localStorage.getItem("lotte-theme") || "dark";
   setTheme(saved);
+  createConfetti();
   generateNumbers();
   refreshBallColors();
   renderChart();
@@ -250,6 +298,7 @@ shareButton.addEventListener("click", handleShare);
 modeToggle.addEventListener("click", toggleTheme);
 window.addEventListener("resize", () => {
   window.requestAnimationFrame(renderChart);
+  window.requestAnimationFrame(createConfetti);
 });
 
 init();

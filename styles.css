@@ -2,26 +2,26 @@
 
 :root {
   color-scheme: light;
-  --bg: #f5f1ea;
-  --bg-accent: #e6d9c9;
-  --card: #fff7ee;
+  --bg: #101018;
+  --bg-accent: #1b1f2b;
+  --card: rgba(26, 24, 30, 0.62);
   --set-bg: rgba(255, 255, 255, 0.85);
-  --text: #261d16;
-  --muted: #6a574a;
+  --text: #f4f2f0;
+  --muted: #c9bdb2;
   --ball: #f2a341;
   --ball-dark: #c97919;
   --shadow: 0 24px 60px rgba(38, 29, 22, 0.18);
-  --outline: rgba(38, 29, 22, 0.2);
+  --outline: rgba(255, 255, 255, 0.18);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #14110d;
-  --bg-accent: #23201b;
-  --card: #1c1814;
+  --bg: #101018;
+  --bg-accent: #1b1f2b;
+  --card: rgba(26, 24, 30, 0.62);
   --set-bg: rgba(255, 255, 255, 0.14);
-  --text: #f3ede6;
-  --muted: #c7b7a5;
+  --text: #f4f2f0;
+  --muted: #c9bdb2;
   --ball: #ef9b38;
   --ball-dark: #b35d16;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
@@ -35,31 +35,76 @@
 body {
   margin: 0;
   font-family: "Space Grotesk", "Noto Sans KR", system-ui, sans-serif;
-  background: radial-gradient(circle at top, var(--bg-accent), transparent 60%),
-    linear-gradient(140deg, var(--bg), #d8c7b4 120%);
+  background: radial-gradient(circle at 50% 10%, rgba(80, 90, 120, 0.6), transparent 55%),
+    radial-gradient(circle at 20% 70%, rgba(40, 50, 80, 0.6), transparent 60%),
+    linear-gradient(180deg, #0b0f1a 0%, #101018 55%, #1a1410 100%);
   color: var(--text);
   min-height: 100vh;
+  position: relative;
 }
 
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.03) 2px,
-    transparent 2px,
-    transparent 10px
-  );
+  background:
+    radial-gradient(circle, rgba(255, 120, 70, 0.4) 0 2px, transparent 4px) 15% 20% / 220px 220px,
+    radial-gradient(circle, rgba(120, 190, 255, 0.35) 0 2px, transparent 4px) 70% 15% / 260px 260px,
+    radial-gradient(circle, rgba(255, 210, 80, 0.35) 0 2px, transparent 4px) 40% 55% / 240px 240px,
+    radial-gradient(circle, rgba(255, 120, 220, 0.35) 0 2px, transparent 4px) 85% 60% / 280px 280px,
+    radial-gradient(circle, rgba(100, 255, 170, 0.35) 0 2px, transparent 4px) 25% 75% / 200px 200px;
+  animation: sparkleDrift 20s linear infinite;
   pointer-events: none;
-  mix-blend-mode: soft-light;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(255, 120, 70, 0.85) 0 6px, transparent 7px) 18% 20% / 220px 220px,
+    radial-gradient(circle, rgba(120, 190, 255, 0.85) 0 6px, transparent 7px) 68% 16% / 240px 240px,
+    radial-gradient(circle, rgba(255, 210, 80, 0.8) 0 6px, transparent 7px) 45% 55% / 210px 210px,
+    radial-gradient(circle, rgba(255, 120, 220, 0.85) 0 6px, transparent 7px) 82% 60% / 250px 250px,
+    radial-gradient(circle, rgba(100, 255, 170, 0.8) 0 6px, transparent 7px) 22% 72% / 200px 200px,
+    radial-gradient(circle, rgba(255, 160, 90, 0.75) 0 4px, transparent 5px) 35% 28% / 170px 170px,
+    radial-gradient(circle, rgba(140, 110, 255, 0.75) 0 4px, transparent 5px) 55% 75% / 190px 190px;
+  animation: fireworksPulse 5.5s ease-in-out infinite, fireworksDrift 26s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+  opacity: 0.8;
+  z-index: 0;
+}
+
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: var(--w, 8px);
+  height: var(--h, 10px);
+  background: var(--c, rgba(255, 255, 255, 0.8));
+  opacity: var(--o, 0.85);
+  border-radius: 2px;
+  transform: rotate(var(--r, 0deg));
+  animation: confettiFall var(--d, 14s) linear var(--delay, 0s) infinite;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
 }
 
 .page {
   max-width: 960px;
   margin: 0 auto;
   padding: clamp(28px, 5vw, 48px) clamp(18px, 4vw, 24px) 64px;
+  position: relative;
+  z-index: 1;
 }
 
 .hero {
@@ -151,6 +196,8 @@ h1 {
   padding: clamp(22px, 4vw, 36px);
   box-shadow: var(--shadow);
   border: 1px solid var(--outline);
+  backdrop-filter: blur(6px) saturate(130%);
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
 }
 
 .data-note {
@@ -313,6 +360,45 @@ h1 {
   }
   100% {
     transform: scale(1);
+  }
+}
+
+@keyframes sparkleDrift {
+  0% {
+    background-position: 15% 20%, 70% 15%, 40% 55%, 85% 60%, 25% 75%;
+  }
+  100% {
+    background-position: 25% 30%, 60% 25%, 50% 45%, 75% 70%, 35% 65%;
+  }
+}
+
+@keyframes fireworksPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 0.95;
+    filter: blur(0.5px);
+  }
+}
+
+@keyframes fireworksDrift {
+  0% {
+    background-position: 18% 20%, 68% 16%, 45% 55%, 82% 60%, 22% 72%, 35% 28%, 55% 75%;
+  }
+  100% {
+    background-position: 28% 15%, 62% 28%, 52% 48%, 72% 70%, 30% 65%, 42% 35%, 50% 68%;
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(var(--r, 0deg));
+  }
+  100% {
+    transform: translate3d(var(--drift, 0px), 120vh, 0) rotate(calc(var(--r, 0deg) + 360deg));
   }
 }
 
