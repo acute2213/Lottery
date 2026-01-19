@@ -26,13 +26,16 @@
               <span class="hero-title__ball" data-number="8">또</span>
             </span>
           </h1>
-          <p class="subtitle">과거 당첨 빈도 기반 6세트 번호를 생성하고 공유하세요.</p>
+          <p class="subtitle">과거 당첨 빈도 기반 5세트 번호를 생성하고 공유하세요.</p>
           <section class="actions hero-actions">
             <button class="action-button action-button--pill action-button--fill" id="generate" type="button">
               <span class="action-button__label">생성</span>
             </button>
             <button class="action-button action-button--pill action-button--outline" id="share" type="button">
               <span class="action-button__label">공유</span>
+            </button>
+            <button class="action-button action-button--pill action-button--ghost" id="scanBarcode" type="button">
+              <span class="action-button__label">바코드 확인</span>
             </button>
           </section>
         </div>
@@ -63,6 +66,20 @@
           </div>
         </section>
       </main>
+
+      <div class="scanner" id="scanner" hidden>
+        <div class="scanner__card" role="dialog" aria-modal="true" aria-labelledby="scannerTitle">
+          <div class="scanner__header">
+            <h2 id="scannerTitle">바코드 스캔</h2>
+            <button class="scanner__close" type="button" id="closeScanner">닫기</button>
+          </div>
+          <div class="scanner__body">
+            <video id="scannerVideo" playsinline muted></video>
+            <p class="scanner__hint" id="scannerHint">카메라를 QR/바코드에 맞춰주세요.</p>
+            <div class="scanner__result" id="scannerResult"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="app.js"></script>

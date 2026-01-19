@@ -300,6 +300,13 @@ h1 {
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
 }
 
+.action-button--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--text);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
+}
+
 .action-button:hover {
   transform: translateY(-4px) scale(1.02);
 }
@@ -341,6 +348,103 @@ h1 {
   border-radius: 20px;
   padding: 16px;
   border: 1px solid var(--outline);
+}
+
+#scannerVideo {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  background: #05070d;
+  aspect-ratio: 3 / 2;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.scanner {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(6, 8, 16, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 3;
+}
+
+.scanner[hidden] {
+  display: none;
+}
+
+.scanner__card {
+  width: min(720px, 92vw);
+  background: rgba(20, 22, 30, 0.88);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+}
+
+.scanner__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.scanner__header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.scanner__close {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.scanner__hint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.scanner__result {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.scan-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.scan-set {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.scan-set__nums {
+  font-weight: 600;
+}
+
+.scan-set__rank {
+  font-weight: 700;
+  color: #ffd277;
 }
 
 #frequencyChart {

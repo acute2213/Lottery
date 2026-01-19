@@ -5,6 +5,12 @@ const statusText = document.getElementById("status");
 const modeToggle = document.querySelector(".mode-toggle");
 const chartCanvas = document.getElementById("frequencyChart");
 const confettiLayer = document.querySelector(".confetti-layer");
+const scanButton = document.getElementById("scanBarcode");
+const scanner = document.getElementById("scanner");
+const scannerVideo = document.getElementById("scannerVideo");
+const scannerHint = document.getElementById("scannerHint");
+const scannerResult = document.getElementById("scannerResult");
+const closeScannerButton = document.getElementById("closeScanner");
 
 const SET_COUNT = 5;
 const COUNT = 6;
@@ -157,6 +163,164 @@ const renderChart = () => {
   });
 };
 
+let scannerStream = null;
+let scannerActive = false;
+let barcodeDetector = null;
+
+const parseQrPayload = (payload) => {
+  if (!payload) return null;
+  let value = payload.trim();
+  let encoded = null;
+  try {
+    const url = new URL(value);
+    encoded = url.searchParams.get("v");
+  } catch (error) {
+    const match = value.match(/[?&]v=([^&]+)/);
+    if (match) encoded = match[1];
+  }
+  if (!encoded) return null;
+  const firstIndex = encoded.indexOf("q");
+  if (firstIndex <= 0) return null;
+  const draw = Number(encoded.slice(0, firstIndex));
+  if (!Number.isInteger(draw)) return null;
+  const sets = [];
+  const regex = /q(\d{12})/g;
+  let group = regex.exec(encoded);
+  while (group) {
+    const digits = group[1];
+    const numbers = [];
+    for (let i = 0; i < digits.length; i += 2) {
+      numbers.push(Number(digits.slice(i, i + 2)));
+    }
+    sets.push(numbers);
+    group = regex.exec(encoded);
+  }
+  return { draw, sets };
+};
+
+const renderScanResult = ({ draw, date, numbers, bonus }, sets) => {
+  scannerResult.innerHTML = "";
+  const summary = document.createElement("div");
+  summary.className = "scan-summary";
+  summary.textContent = `제 ${draw}회 (${date}) 당첨번호: ${numbers.join(", ")} + 보너스 ${bonus}`;
+  scannerResult.appendChild(summary);
+
+  sets.forEach((set, index) => {
+    const matchCount = set.filter((num) => numbers.includes(num)).length;
+    const bonusMatch = set.includes(bonus);
+    let rank = "낙첨";
+    if (matchCount === 6) rank = "1등";
+    else if (matchCount === 5 && bonusMatch) rank = "2등";
+    else if (matchCount === 5) rank = "3등";
+    else if (matchCount === 4) rank = "4등";
+    else if (matchCount === 3) rank = "5등";
+
+    const row = document.createElement("div");
+    row.className = "scan-set";
+    const nums = document.createElement("div");
+    nums.className = "scan-set__nums";
+    nums.textContent = `${index + 1}번: ${set.join(", ")}`;
+    const badge = document.createElement("div");
+    badge.className = "scan-set__rank";
+    badge.textContent = rank;
+    row.appendChild(nums);
+    row.appendChild(badge);
+    scannerResult.appendChild(row);
+  });
+};
+
+const checkWinning = async (payload) => {
+  const parsed = parseQrPayload(payload);
+  if (!parsed) {
+    scannerHint.textContent = "QR 형식을 인식하지 못했습니다.";
+    return;
+  }
+
+  const { draw, sets } = parsed;
+  if (sets.length === 0) {
+    scannerHint.textContent = "QR에 로또 번호가 없습니다.";
+    return;
+  }
+
+  scannerHint.textContent = "당첨 번호를 조회하는 중입니다...";
+  const response = await fetch(`/api/check-lotto?draw=${draw}`);
+  if (!response.ok) {
+    scannerHint.textContent = "당첨 번호 조회에 실패했습니다.";
+    return;
+  }
+  const data = await response.json();
+  if (!data || data.error) {
+    scannerHint.textContent = "당첨 번호 데이터를 가져오지 못했습니다.";
+    return;
+  }
+  scannerHint.textContent = "조회 완료";
+  renderScanResult(data, sets);
+};
+
+const stopScanner = () => {
+  scannerActive = false;
+  if (scannerStream) {
+    scannerStream.getTracks().forEach((track) => track.stop());
+    scannerStream = null;
+  }
+  if (scannerVideo) {
+    scannerVideo.srcObject = null;
+  }
+};
+
+const scanLoop = async () => {
+  if (!scannerActive || !barcodeDetector || !scannerVideo) return;
+  try {
+    const barcodes = await barcodeDetector.detect(scannerVideo);
+    if (barcodes.length > 0) {
+      scannerActive = false;
+      const payload = barcodes[0].rawValue || "";
+      stopScanner();
+      await checkWinning(payload);
+      return;
+    }
+  } catch (error) {
+    scannerHint.textContent = "카메라 인식에 실패했습니다.";
+  }
+  if (scannerActive) {
+    window.requestAnimationFrame(scanLoop);
+  }
+};
+
+const startScanner = async () => {
+  if (!scanner || !scannerVideo) return;
+  scannerResult.innerHTML = "";
+  scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
+  scanner.hidden = false;
+
+  if (!("BarcodeDetector" in window)) {
+    scannerHint.textContent = "이 브라우저는 QR 인식을 지원하지 않습니다.";
+    return;
+  }
+
+  try {
+    barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false,
+    });
+    scannerVideo.srcObject = scannerStream;
+    await scannerVideo.play();
+    scannerActive = true;
+    scanLoop();
+  } catch (error) {
+    scannerHint.textContent = "카메라 권한을 확인해주세요.";
+    stopScanner();
+  }
+};
+
+const closeScanner = () => {
+  stopScanner();
+  if (scanner) {
+    scanner.hidden = true;
+  }
+};
+
 const createConfetti = () => {
   if (!confettiLayer) return;
   confettiLayer.innerHTML = "";
@@ -206,7 +370,7 @@ const createConfetti = () => {
 const generateNumbers = () => {
   currentSets = Array.from({ length: SET_COUNT }, () => createWeightedSet());
   renderSets(currentSets);
-  updateStatus(`최근 ${TOTAL_DRAWS}회차 기준으로 6세트를 생성했습니다.`);
+  updateStatus(`최근 ${TOTAL_DRAWS}회차 기준으로 ${SET_COUNT}세트를 생성했습니다.`);
   return currentSets;
 };
 
@@ -296,6 +460,17 @@ const init = () => {
 generateButton.addEventListener("click", generateNumbers);
 shareButton.addEventListener("click", handleShare);
 modeToggle.addEventListener("click", toggleTheme);
+if (scanButton) {
+  scanButton.addEventListener("click", startScanner);
+}
+if (closeScannerButton) {
+  closeScannerButton.addEventListener("click", closeScanner);
+}
+if (scanner) {
+  scanner.addEventListener("click", (event) => {
+    if (event.target === scanner) closeScanner();
+  });
+}
 window.addEventListener("resize", () => {
   window.requestAnimationFrame(renderChart);
   window.requestAnimationFrame(createConfetti);
