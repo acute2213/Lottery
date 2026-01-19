@@ -74,12 +74,19 @@
             <button class="scanner__close" type="button" id="closeScanner">닫기</button>
           </div>
           <div class="scanner__body">
-            <video id="scannerVideo" playsinline muted></video>
+            <div class="scanner__preview">
+              <video id="scannerVideo" playsinline muted></video>
+              <canvas id="scannerOverlay"></canvas>
+            </div>
             <p class="scanner__hint" id="scannerHint">카메라를 QR/바코드에 맞춰주세요.</p>
             <div class="scanner__actions">
               <button class="scanner__confirm" type="button" id="scannerConfirm">확인</button>
               <label class="scanner__upload" for="scannerFile">사진 업로드</label>
               <input id="scannerFile" type="file" accept="image/*" capture="environment" />
+            </div>
+            <div class="scanner__manual">
+              <input id="scannerInput" type="text" placeholder="QR 링크를 붙여넣으세요" />
+              <button class="scanner__confirm" type="button" id="scannerSubmit">조회</button>
             </div>
             <div class="scanner__result" id="scannerResult"></div>
           </div>

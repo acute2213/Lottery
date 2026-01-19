@@ -8,11 +8,14 @@ const confettiLayer = document.querySelector(".confetti-layer");
 const scanButton = document.getElementById("scanBarcode");
 const scanner = document.getElementById("scanner");
 const scannerVideo = document.getElementById("scannerVideo");
+const scannerOverlay = document.getElementById("scannerOverlay");
 const scannerHint = document.getElementById("scannerHint");
 const scannerResult = document.getElementById("scannerResult");
 const closeScannerButton = document.getElementById("closeScanner");
 const scannerConfirm = document.getElementById("scannerConfirm");
 const scannerFile = document.getElementById("scannerFile");
+const scannerInput = document.getElementById("scannerInput");
+const scannerSubmit = document.getElementById("scannerSubmit");
 
 const SET_COUNT = 5;
 const COUNT = 6;
@@ -170,6 +173,50 @@ let scannerActive = false;
 let barcodeDetector = null;
 let zxingReader = null;
 let zxingActive = false;
+let overlayCtx = null;
+
+const syncOverlaySize = () => {
+  if (!scannerOverlay || !scannerVideo) return;
+  const width = scannerVideo.clientWidth || 0;
+  const height = scannerVideo.clientHeight || 0;
+  if (width === 0 || height === 0) return;
+  scannerOverlay.width = width;
+  scannerOverlay.height = height;
+  overlayCtx = scannerOverlay.getContext("2d");
+};
+
+const clearOverlay = () => {
+  if (!overlayCtx || !scannerOverlay) return;
+  overlayCtx.clearRect(0, 0, scannerOverlay.width, scannerOverlay.height);
+};
+
+const drawOverlay = (points) => {
+  if (!overlayCtx || !scannerVideo || !scannerOverlay || !points || points.length === 0) {
+    return;
+  }
+  const videoWidth = scannerVideo.videoWidth || scannerOverlay.width;
+  const videoHeight = scannerVideo.videoHeight || scannerOverlay.height;
+  const scaleX = scannerOverlay.width / videoWidth;
+  const scaleY = scannerOverlay.height / videoHeight;
+
+  overlayCtx.clearRect(0, 0, scannerOverlay.width, scannerOverlay.height);
+  overlayCtx.strokeStyle = "#ffd400";
+  overlayCtx.lineWidth = 3;
+  overlayCtx.shadowColor = "rgba(255, 212, 0, 0.65)";
+  overlayCtx.shadowBlur = 10;
+  overlayCtx.beginPath();
+  points.forEach((point, index) => {
+    const x = point.x * scaleX;
+    const y = point.y * scaleY;
+    if (index === 0) {
+      overlayCtx.moveTo(x, y);
+    } else {
+      overlayCtx.lineTo(x, y);
+    }
+  });
+  overlayCtx.closePath();
+  overlayCtx.stroke();
+};
 
 const parseQrPayload = (payload) => {
   if (!payload) return null;
@@ -282,6 +329,7 @@ const checkWinning = async (payload) => {
 const stopScanner = () => {
   scannerActive = false;
   zxingActive = false;
+  clearOverlay();
   if (zxingReader) {
     try {
       zxingReader.reset();
@@ -305,6 +353,9 @@ const scanLoop = async () => {
     if (barcodes.length > 0) {
       scannerActive = false;
       const payload = barcodes[0].rawValue || "";
+      if (barcodes[0].cornerPoints) {
+        drawOverlay(barcodes[0].cornerPoints);
+      }
       stopScanner();
       await checkWinning(payload);
       return;
@@ -312,6 +363,7 @@ const scanLoop = async () => {
   } catch (error) {
     scannerHint.textContent = "카메라 인식에 실패했습니다.";
   }
+  clearOverlay();
   if (scannerActive) {
     window.requestAnimationFrame(scanLoop);
   }
@@ -339,26 +391,35 @@ const startZxing = async () => {
     }
     zxingReader = new ZXing.BrowserMultiFormatReader(hints);
     zxingActive = true;
-    scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-      audio: false,
-    });
-    scannerVideo.srcObject = scannerStream;
-    await scannerVideo.play();
     scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
-    await zxingReader.decodeFromVideoElement(scannerVideo, async (result, error) => {
+    const onResult = async (result) => {
       if (!zxingActive) return;
       if (result && result.getText) {
         zxingActive = false;
         const payload = result.getText();
+        const points = result.getResultPoints ? result.getResultPoints() : null;
+        if (points && points.length) {
+          drawOverlay(points);
+        }
         stopScanner();
         await checkWinning(payload);
       }
-    });
+    };
+    if (zxingReader.decodeFromConstraints) {
+      await zxingReader.decodeFromConstraints(
+        {
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        },
+        scannerVideo,
+        (result) => onResult(result)
+      );
+    } else {
+      await zxingReader.decodeFromVideoDevice(null, scannerVideo, (result) => onResult(result));
+    }
   } catch (error) {
     scannerHint.textContent = "카메라 권한을 확인해주세요.";
   }
@@ -425,6 +486,7 @@ const startScanner = async () => {
       await scannerVideo.play();
       scannerActive = true;
       scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
+      syncOverlaySize();
       scanLoop();
       return;
     } catch (error) {
@@ -597,6 +659,16 @@ if (scannerFile) {
     }
   });
 }
+if (scannerSubmit) {
+  scannerSubmit.addEventListener("click", () => {
+    const value = scannerInput ? scannerInput.value : "";
+    if (value && value.trim()) {
+      checkWinning(value.trim());
+    } else {
+      scannerHint.textContent = "QR 링크를 입력해주세요.";
+    }
+  });
+}
 if (closeScannerButton) {
   closeScannerButton.addEventListener("click", closeScanner);
 }
@@ -608,6 +680,7 @@ if (scanner) {
 window.addEventListener("resize", () => {
   window.requestAnimationFrame(renderChart);
   window.requestAnimationFrame(createConfetti);
+  window.requestAnimationFrame(syncOverlaySize);
 });
 
 init();
