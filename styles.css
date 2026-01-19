@@ -314,7 +314,7 @@ h1 {
 
 .set-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(70px, 1fr));
+  grid-template-columns: repeat(6, minmax(60px, 1fr));
   gap: 14px;
   justify-items: center;
 }
