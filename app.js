@@ -174,6 +174,8 @@ let barcodeDetector = null;
 let zxingReader = null;
 let zxingActive = false;
 let overlayCtx = null;
+let scanTimer = null;
+let scanStartAt = 0;
 
 const syncOverlaySize = () => {
   if (!scannerOverlay || !scannerVideo) return;
@@ -337,6 +339,10 @@ const stopScanner = () => {
   scannerActive = false;
   zxingActive = false;
   clearOverlay();
+  if (scanTimer) {
+    clearInterval(scanTimer);
+    scanTimer = null;
+  }
   if (zxingReader) {
     try {
       zxingReader.reset();
@@ -351,6 +357,21 @@ const stopScanner = () => {
   if (scannerVideo) {
     scannerVideo.srcObject = null;
   }
+};
+
+const startScanTimer = () => {
+  if (scanTimer) clearInterval(scanTimer);
+  scanStartAt = Date.now();
+  scanTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - scanStartAt) / 1000);
+    if (elapsed < 5) {
+      scannerHint.textContent = `스캔 중... ${elapsed}s`;
+    } else if (elapsed < 12) {
+      scannerHint.textContent = "스캔 중... QR이 잘 보이도록 가까이 대주세요.";
+    } else {
+      scannerHint.textContent = "인식이 안 되면 사진 업로드나 링크 붙여넣기를 사용하세요.";
+    }
+  }, 1000);
 };
 
 const scanLoop = async () => {
@@ -399,6 +420,7 @@ const startZxing = async () => {
     zxingReader = new ZXing.BrowserMultiFormatReader(hints);
     zxingActive = true;
     scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
+    startScanTimer();
     const onResult = async (result) => {
       if (!zxingActive) return;
       if (result && result.getText) {
@@ -407,6 +429,10 @@ const startZxing = async () => {
         const points = result.getResultPoints ? result.getResultPoints() : null;
         if (points && points.length) {
           drawOverlay(points);
+        }
+        if (scanTimer) {
+          clearInterval(scanTimer);
+          scanTimer = null;
         }
         stopScanner();
         await checkWinning(payload);
@@ -490,9 +516,11 @@ const startScanner = async () => {
         audio: false,
       });
       scannerVideo.srcObject = scannerStream;
+      scannerVideo.addEventListener("loadedmetadata", syncOverlaySize, { once: true });
       await scannerVideo.play();
       scannerActive = true;
       scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
+      startScanTimer();
       syncOverlaySize();
       scanLoop();
       return;
