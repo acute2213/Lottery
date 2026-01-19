@@ -352,11 +352,11 @@ h1 {
 
 #scannerVideo {
   width: 100%;
-  height: auto;
+  height: clamp(320px, 58vh, 520px);
   border-radius: 18px;
   background: #05070d;
-  aspect-ratio: 3 / 2;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: cover;
 }
 
 .scanner {
@@ -376,7 +376,7 @@ h1 {
 }
 
 .scanner__card {
-  width: min(720px, 92vw);
+  width: min(760px, 94vw);
   background: rgba(20, 22, 30, 0.88);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -412,6 +412,18 @@ h1 {
   margin: 12px 0 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.scanner__confirm {
+  margin-top: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .scanner__result {
@@ -564,6 +576,15 @@ h1 {
     justify-content: center;
     font-size: 18px;
     padding: 12px 24px;
+  }
+
+  #scannerVideo {
+    height: 62vh;
+  }
+
+  .scanner__card {
+    width: 100%;
+    padding: 16px;
   }
 }
 

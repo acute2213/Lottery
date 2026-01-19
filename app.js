@@ -11,6 +11,7 @@ const scannerVideo = document.getElementById("scannerVideo");
 const scannerHint = document.getElementById("scannerHint");
 const scannerResult = document.getElementById("scannerResult");
 const closeScannerButton = document.getElementById("closeScanner");
+const scannerConfirm = document.getElementById("scannerConfirm");
 
 const SET_COUNT = 5;
 const COUNT = 6;
@@ -244,15 +245,15 @@ const checkWinning = async (payload) => {
     return;
   }
 
-  scannerHint.textContent = "당첨 번호를 조회하는 중입니다...";
+  scannerHint.textContent = "조회 중...";
   const response = await fetch(`/api/check-lotto?draw=${draw}`);
   if (!response.ok) {
-    scannerHint.textContent = "당첨 번호 조회에 실패했습니다.";
+    scannerHint.textContent = "조회 실패. 다시 눌러주세요.";
     return;
   }
   const data = await response.json();
   if (!data || data.error) {
-    scannerHint.textContent = "당첨 번호 데이터를 가져오지 못했습니다.";
+    scannerHint.textContent = "데이터를 가져오지 못했습니다.";
     return;
   }
   scannerHint.textContent = "조회 완료";
@@ -305,7 +306,18 @@ const startZxing = async () => {
   try {
     zxingReader = new window.ZXing.BrowserMultiFormatReader();
     zxingActive = true;
-    await zxingReader.decodeFromVideoDevice(null, scannerVideo, async (result, error) => {
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
+    scannerVideo.srcObject = scannerStream;
+    await scannerVideo.play();
+    scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
+    await zxingReader.decodeFromVideoElement(scannerVideo, async (result, error) => {
       if (!zxingActive) return;
       if (result && result.getText) {
         zxingActive = false;
@@ -322,23 +334,28 @@ const startZxing = async () => {
 const startScanner = async () => {
   if (!scanner || !scannerVideo) return;
   scannerResult.innerHTML = "";
-  scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
+  scannerHint.textContent = "카메라 사용 확인을 눌러주세요.";
   scanner.hidden = false;
 
   if ("BarcodeDetector" in window) {
     try {
       barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
       scannerStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
         audio: false,
       });
       scannerVideo.srcObject = scannerStream;
       await scannerVideo.play();
       scannerActive = true;
+      scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
       scanLoop();
       return;
     } catch (error) {
-      scannerHint.textContent = "카메라 권한을 확인해주세요.";
+      scannerHint.textContent = "카메라 권한이 필요합니다. 확인을 눌러주세요.";
       stopScanner();
       return;
     }
@@ -495,6 +512,9 @@ shareButton.addEventListener("click", handleShare);
 modeToggle.addEventListener("click", toggleTheme);
 if (scanButton) {
   scanButton.addEventListener("click", startScanner);
+}
+if (scannerConfirm) {
+  scannerConfirm.addEventListener("click", startScanner);
 }
 if (closeScannerButton) {
   closeScannerButton.addEventListener("click", closeScanner);
