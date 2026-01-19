@@ -312,14 +312,21 @@ const checkWinning = async (payload) => {
   }
 
   scannerHint.textContent = "조회 중...";
-  const response = await fetch(`/api/check-lotto?draw=${draw}`);
-  if (!response.ok) {
-    scannerHint.textContent = "조회 실패. 다시 눌러주세요.";
+  let response = null;
+  try {
+    response = await fetch(`/api/check-lotto?draw=${draw}`);
+  } catch (error) {
+    showScanError("서버 연결 실패", String(error));
     return;
   }
-  const data = await response.json();
+  if (!response.ok) {
+    const raw = await response.text().catch(() => "");
+    showScanError(`조회 실패 (${response.status})`, raw);
+    return;
+  }
+  const data = await response.json().catch(() => null);
   if (!data || data.error) {
-    scannerHint.textContent = "데이터를 가져오지 못했습니다.";
+    showScanError("데이터를 가져오지 못했습니다.", JSON.stringify(data || {}));
     return;
   }
   scannerHint.textContent = "조회 완료";
