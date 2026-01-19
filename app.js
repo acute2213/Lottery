@@ -166,6 +166,8 @@ const renderChart = () => {
 let scannerStream = null;
 let scannerActive = false;
 let barcodeDetector = null;
+let zxingReader = null;
+let zxingActive = false;
 
 const parseQrPayload = (payload) => {
   if (!payload) return null;
@@ -259,6 +261,14 @@ const checkWinning = async (payload) => {
 
 const stopScanner = () => {
   scannerActive = false;
+  zxingActive = false;
+  if (zxingReader) {
+    try {
+      zxingReader.reset();
+    } catch (error) {
+      // ignore
+    }
+  }
   if (scannerStream) {
     scannerStream.getTracks().forEach((track) => track.stop());
     scannerStream = null;
@@ -287,31 +297,54 @@ const scanLoop = async () => {
   }
 };
 
+const startZxing = async () => {
+  if (!scannerVideo || !window.ZXing) {
+    scannerHint.textContent = "이 브라우저는 QR 인식을 지원하지 않습니다.";
+    return;
+  }
+  try {
+    zxingReader = new window.ZXing.BrowserMultiFormatReader();
+    zxingActive = true;
+    await zxingReader.decodeFromVideoDevice(null, scannerVideo, async (result, error) => {
+      if (!zxingActive) return;
+      if (result && result.getText) {
+        zxingActive = false;
+        const payload = result.getText();
+        stopScanner();
+        await checkWinning(payload);
+      }
+    });
+  } catch (error) {
+    scannerHint.textContent = "카메라 권한을 확인해주세요.";
+  }
+};
+
 const startScanner = async () => {
   if (!scanner || !scannerVideo) return;
   scannerResult.innerHTML = "";
   scannerHint.textContent = "카메라를 QR/바코드에 맞춰주세요.";
   scanner.hidden = false;
 
-  if (!("BarcodeDetector" in window)) {
-    scannerHint.textContent = "이 브라우저는 QR 인식을 지원하지 않습니다.";
-    return;
+  if ("BarcodeDetector" in window) {
+    try {
+      barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
+      scannerStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      scannerVideo.srcObject = scannerStream;
+      await scannerVideo.play();
+      scannerActive = true;
+      scanLoop();
+      return;
+    } catch (error) {
+      scannerHint.textContent = "카메라 권한을 확인해주세요.";
+      stopScanner();
+      return;
+    }
   }
 
-  try {
-    barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
-    scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
-      audio: false,
-    });
-    scannerVideo.srcObject = scannerStream;
-    await scannerVideo.play();
-    scannerActive = true;
-    scanLoop();
-  } catch (error) {
-    scannerHint.textContent = "카메라 권한을 확인해주세요.";
-    stopScanner();
-  }
+  await startZxing();
 };
 
 const closeScanner = () => {
