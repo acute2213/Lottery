@@ -663,7 +663,7 @@ h1 {
   }
 
   .set-row {
-    grid-template-columns: repeat(3, minmax(70px, 1fr));
+    grid-template-columns: repeat(6, minmax(48px, 1fr));
     justify-items: start;
   }
 
@@ -699,9 +699,9 @@ h1 {
   }
 
   .ball {
-    width: 78px;
-    height: 78px;
-    font-size: 20px;
+    width: 56px;
+    height: 56px;
+    font-size: 16px;
   }
 
   .actions {
@@ -732,13 +732,14 @@ h1 {
   }
 
   .set-row {
-    grid-template-columns: repeat(2, minmax(70px, 1fr));
+    grid-template-columns: repeat(6, minmax(42px, 1fr));
+    gap: 8px;
   }
 
   .ball {
-    width: 70px;
-    height: 70px;
-    font-size: 18px;
+    width: 46px;
+    height: 46px;
+    font-size: 14px;
   }
 
   #frequencyChart {
